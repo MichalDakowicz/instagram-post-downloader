@@ -1,0 +1,137 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Downloader</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: gray;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: gray;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        .button {
+            background-color: gray;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #555;
+        }
+
+        #video-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: white;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: lightgray;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: darkgray;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $('#download-form').submit(function(e) {
+                e.preventDefault();
+                var username = $('#username').val();
+                var password = $('#password').val();
+                var post_urls = $('#post_urls').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/download',
+                    data: {
+                        username: username,
+                        password: password,
+                        post_urls: post_urls
+                    },
+                    success: function(data) {
+                        console.log(data);
+                        for (url of data) {
+                            var link = document.createElement('a');
+                            link.href = url;
+                            link.download = 'video.mp4';
+                            link.click();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Bulk Instagram Downloader</h1>
+    <p>Login is optional and isn't required for most cases!</p>
+    <form method="post" id="download-form">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username">
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+        
+        <label for="post_urls">Post URLs (one per line):</label>
+        <textarea id="post_urls" name="post_urls" rows="4" cols="50"></textarea>
+        
+        <button class="button" type="submit">Download</button>
+    </form>
+    <div id="video-container"></div>
+</body>
+</html>
