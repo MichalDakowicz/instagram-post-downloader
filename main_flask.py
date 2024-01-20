@@ -28,11 +28,11 @@ class Downloader:
         try:
             post = instaloader.Post.from_shortcode(self.L.context, post_url.split("/")[-2])
             self.L.download_post(post, target='videos')
-            if post.typename == 'GraphImage':
-                suffix = '.jpg'
-            elif post.typename == 'GraphVideo':
+            if post.typename == 'GraphVideo':
                 suffix = '.mp4'
-            return 'videos/' + post.date.isoformat().replace('T', '_').replace(':', '-') + "_UTC" + suffix
+            else:
+                suffix = '.jpg'
+            return 'videos/' + post.date.isoformat().replace('T', '_').replace(':', '-') + "_UTC" + suffix          
         except instaloader.exceptions.InstaloaderException as e:
             return False
     
@@ -46,14 +46,24 @@ class Downloader:
             os.remove(txt_file)
         return urls
 
+# @app.route('/download', methods=['POST'])
+# def download():
+#     username = request.form.get('username')
+#     password = request.form.get('password')
+#     post_urls = request.form.get('post_urls').splitlines()
+#     downloader = Downloader(username, password)
+#     urls = downloader.run(post_urls)
+#     return urls
+
 @app.route('/download', methods=['POST'])
 def download():
     username = request.form.get('username')
     password = request.form.get('password')
     post_urls = request.form.get('post_urls').splitlines()
     downloader = Downloader(username, password)
-    urls = downloader.run(post_urls)
-    return urls
+    downloader.run(post_urls)
+    urls = [os.path.join('videos', os.path.basename(f)) for f in glob.glob(".\\videos\\*")]
+    return jsonify(urls)
 
 @app.route('/videos/<path:filename>')
 def media(filename):
@@ -62,3 +72,10 @@ def media(filename):
         filename,
         as_attachment=True
     )
+
+@app.route('/clear', methods=['POST'])
+def clear():
+    files = glob.glob('./videos/*')
+    for f in files:
+        os.remove(f)
+    return jsonify({'status': 'success'})

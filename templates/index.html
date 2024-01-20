@@ -1,7 +1,3 @@
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,6 +107,14 @@
                             link.download = 'video.mp4';
                             link.click();
                         }
+
+                        setTimeout(() => $.ajax({
+                            type: 'POST',
+                            url: '/clear',
+                            success: function(response) {
+                                console.log(response);
+                            }
+                        }), 5000);
                     }
                 });
             });
