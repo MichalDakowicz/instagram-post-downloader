@@ -62,6 +62,11 @@
             background-color: #555;
         }
 
+        .button:active {
+            scale: 0.95;
+            background-color: #444;
+        }
+
         #video-container {
             text-align: center;
             margin-top: 20px;
@@ -83,43 +88,79 @@
         ::-webkit-scrollbar-thumb:hover {
             background: darkgray;
         }
+        #progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #download-progress {
+            height: 30px;
+        }
+        #progress-text {
+            color: gray;
+            font-size: 20px;
+            margin-top: 2px;
+            position: absolute;
+        }
     </style>
     <script>
-        $(document).ready(function() {
-            $('#download-form').submit(function(e) {
-                e.preventDefault();
-                var username = $('#username').val();
-                var password = $('#password').val();
-                var post_urls = $('#post_urls').val();
-                $.ajax({
-                    type: 'POST',
-                    url: '/download',
-                    data: {
-                        username: username,
-                        password: password,
-                        post_urls: post_urls
-                    },
-                    success: function(data) {
-                        console.log(data);
-                        for (url of data) {
-                            var link = document.createElement('a');
-                            link.href = url;
-                            link.download = 'video.mp4';
-                            link.click();
-                        }
-
-                        setTimeout(() => $.ajax({
-                            type: 'POST',
-                            url: '/clear',
-                            success: function(response) {
-                                console.log(response);
-                            }
-                        }), 5000);
-                    }
-                });
-            });
+    $(document).ready(function() {
+        $('#download-form').submit(function(e) {
+            e.preventDefault();
+            var username = $('#username').val();
+            var password = $('#password').val();
+            var post_urls = $('#post_urls').val().split('\n').filter(Boolean); // Remove empty lines
+            downloadPosts(username, password, post_urls, 0);
         });
-    </script>
+    
+        function updateProgress(progress) {
+            var roundedProgress = Math.ceil(progress * 10) / 10;
+            $('#download-progress').val(roundedProgress);
+            $('#progress-text').text(roundedProgress + '%');
+        }
+    
+        function downloadPosts(username, password, postUrls, index) {
+            if (index >= postUrls.length) {
+                // All posts downloaded, clear files after a delay
+                setTimeout(() => {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/clear',
+                        success: function(response) {
+                            console.log(response);
+                            updateProgress(0); // Reset progress after clearing files
+                        }
+                    });
+                }, 5000);
+                return;
+            }
+    
+            var postUrl = postUrls[index];
+            $.ajax({
+                type: 'POST',
+                url: '/download',
+                data: {
+                    username: username,
+                    password: password,
+                    post_urls: postUrl
+                },
+                success: function(data) {
+                    console.log(data);
+                    var link = document.createElement('a');
+                    link.href = data[0];
+                    link.download = 'video.mp4';
+                    link.click();
+    
+                    // Update progress and continue downloading the next post
+                    var progress = ((index + 1) / postUrls.length) * 100;
+                    updateProgress(progress);
+                    downloadPosts(username, password, postUrls, index + 1);
+                }
+            });
+        }
+    });
+    </script>    
 </head>
 <body>
     <h1>Bulk Instagram Downloader</h1>
@@ -136,6 +177,10 @@
         
         <button class="button" type="submit">Download</button>
     </form>
+    <div id="progress-container">
+        <progress id="download-progress" value="0" max="100"></progress>
+        <span id="progress-text">0%</span>
+    </div>
     <div id="video-container"></div>
 </body>
 </html>
