@@ -1,6 +1,6 @@
 services:
 - name: bulk-instagram-post-downloader
-  type: python
+  type: web
   build:
     command: pip install -r requirements.txt
   envVars:
@@ -11,6 +11,6 @@ services:
   routes:
   - path: /
     action:
-      service: app
+      service: bulk-instagram-post-downloader
       type: http
       port: 5000
