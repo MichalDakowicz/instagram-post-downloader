@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: bulk-instagram-post-downloader
+    plan: starter
+    env: python
+    region: <choose a region>
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
