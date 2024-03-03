@@ -1,8 +1,16 @@
 services:
-  - type: web
-    name: bulk-instagram-post-downloader
-    plan: starter
-    env: python
-    region: <choose a region>
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+- name: bulk-instagram-post-downloader
+  type: python
+  build:
+    command: pip install -r requirements.txt
+  envVars:
+  - key: FLASK_APP
+    value: app.py
+  - key: FLASK_ENV
+    value: development
+  routes:
+  - path: /
+    action:
+      service: app
+      type: http
+      port: 5000
