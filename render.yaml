@@ -1,16 +1,8 @@
 services:
 - name: bulk-instagram-post-downloader
   type: web
-  build:
-    command: pip install -r requirements.txt
   envVars:
   - key: FLASK_APP
     value: app.py
   - key: FLASK_ENV
     value: development
-  routes:
-  - path: /
-    action:
-      service: bulk-instagram-post-downloader
-      type: http
-      port: 5000
