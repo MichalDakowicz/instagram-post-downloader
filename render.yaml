@@ -1,8 +1,10 @@
 services:
-- name: bulk-instagram-post-downloader
-  type: web
-  envVars:
-  - key: FLASK_APP
-    value: app.py
-  - key: FLASK_ENV
-    value: development
+  - name: bulk-instagram-post-downloader
+    type: web
+    runtime: python
+    envVars:
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_ENV
+        value: development
+    startCommand: flask run --host=0.0.0.0 --port=5000
