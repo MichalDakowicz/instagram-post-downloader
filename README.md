@@ -1,14 +1,21 @@
 # instagram post downloader
- simple bulk post downloader from link for instagram
+
+simple bulk post downloader from link for instagram
 
 ### SETUP:
+
 go into the terminal and run the command
+
 ```
-pip install instaloader
+pip install -r requirements.txt
 ```
+
 ### HOW TO USE:
+
 place your links in the links.txt file
+
 ```
 run main.py
 ```
+
 wait for it to finish

@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 import instaloader
 import os
 import glob
+import zipfile
+import time
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'videos')
@@ -51,7 +53,14 @@ def download():
     post_urls = request.form.get('post_urls').splitlines()
     downloader = Downloader(username, password)
     urls = downloader.run(post_urls)
-    return jsonify(urls)
+
+    # Create a ZipFile object
+    with zipfile.ZipFile('zip/downloads.zip', 'w') as zipf:
+        # Add multiple files to the zip
+        for url in glob.glob('./videos/*'):
+            zipf.write(url, arcname=os.path.basename(url))
+    
+    return jsonify({'zipfile': 'zip/downloads.zip'})
 
 @app.route('/videos/<path:filename>')
 def media(filename):
@@ -63,6 +72,7 @@ def media(filename):
 
 @app.route('/clear', methods=['POST'])
 def clear():
+    time.sleep(5)
     files = glob.glob('./videos/*')
     for f in files:
         os.remove(f)
