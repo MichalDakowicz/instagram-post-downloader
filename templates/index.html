@@ -107,68 +107,71 @@
         </style>
         <script>
             $(document).ready(function () {
-                $("#download-form").submit(function (e) {
+                $("#download-form").on("submit", function (e) {
                     e.preventDefault();
+
                     var username = $("#username").val();
                     var password = $("#password").val();
-                    var post_urls = $("#post_urls")
-                        .val()
-                        .split("\n")
-                        .filter(Boolean); // Remove empty lines
-                    downloadPosts(username, password, post_urls, 0);
-                });
+                    var post_urls = $("#post_urls").val();
 
-                function updateProgress(progress) {
-                    var roundedProgress = Math.ceil(progress * 10) / 10;
-                    $("#download-progress").val(roundedProgress);
-                    $("#progress-text").text(roundedProgress + "%");
-                }
+                    // Show progress indication
+                    $("#progress-container").show();
 
-                function downloadPosts(username, password, postUrls, index) {
-                    if (index >= postUrls.length) {
-                        // All posts downloaded, clear files after a delay
-                        setTimeout(() => {
-                            $.ajax({
-                                type: "POST",
-                                url: "/clear",
-                                success: function (response) {
-                                    console.log(response);
-                                    updateProgress(0); // Reset progress after clearing files
-                                },
-                            });
-                        }, 5000);
-                        return;
-                    }
-
-                    var postUrl = postUrls[index];
                     $.ajax({
-                        type: "POST",
                         url: "/download",
+                        method: "POST",
                         data: {
                             username: username,
                             password: password,
-                            post_urls: postUrl,
+                            post_urls: post_urls,
+                        },
+                        xhr: function () {
+                            var xhr = new window.XMLHttpRequest();
+                            // Upload progress
+                            xhr.upload.addEventListener(
+                                "progress",
+                                function (evt) {
+                                    if (evt.lengthComputable) {
+                                        var percentComplete =
+                                            evt.loaded / evt.total;
+                                        // Update progress bar
+                                        $("#download-progress").css(
+                                            "width",
+                                            percentComplete * 100 + "%"
+                                        );
+                                        // Update progress text
+                                        $("#progress-text").text(
+                                            Math.round(percentComplete * 100) +
+                                                "%"
+                                        );
+                                    }
+                                },
+                                false
+                            );
+                            return xhr;
                         },
                         success: function (data) {
-                            console.log(data);
-                            var link = document.createElement("a");
-                            link.href = data.zipfile; // Assuming the response contains a 'zipfile' field with the zip file URL
-                            link.download = "downloads.zip";
-                            link.click();
-
-                            // Update progress and continue downloading the next post
-                            var progress =
-                                ((index + 1) / postUrls.length) * 100;
-                            updateProgress(progress);
-                            downloadPosts(
-                                username,
-                                password,
-                                postUrls,
-                                index + 1
-                            );
+                            window.location.href = "/download"; // Redirect on success
+                        },
+                        error: function () {
+                            alert("An error occurred. Please try again.");
                         },
                     });
-                }
+                });
+
+                // Handler for clear button
+                $("#clear-button").on("click", function () {
+                    $.ajax({
+                        url: "/clear",
+                        method: "POST",
+                        success: function (data) {
+                            alert("Cleared successfully."); // Alert on successful clear
+                        },
+                        error: function () {
+                            alert("An error occurred. Please try again.");
+                        },
+                    });
+                });
             });
         </script>
     </head>
@@ -192,11 +195,9 @@
 
             <button class="button" type="submit">Download</button>
         </form>
-        <div id="progress-container">
-            <progress id="download-progress" value="0" max="100"></progress>
-            <span id="progress-text" style="font-size: 15px; color: #ccc"
-                >0%</span
-            >
+        <div id="progress-container" style="display: none">
+            <div id="download-progress"></div>
+            <div id="progress-text">0%</div>
         </div>
         <div id="video-container"></div>
     </body>

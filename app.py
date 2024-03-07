@@ -27,16 +27,8 @@ class Downloader:
         self.L.login(username, password)
     
     def download_post(self, post_url):
-        try:
-            post = instaloader.Post.from_shortcode(self.L.context, post_url.split("/")[-2])
-            self.L.download_post(post, target='videos')
-            if post.typename == 'GraphVideo':
-                suffix = '.mp4'
-            else:
-                suffix = '.jpg'
-            return 'videos/' + post.date.isoformat().replace('T', '_').replace(':', '-') + "_UTC" + suffix          
-        except instaloader.exceptions.InstaloaderException as e:
-            return False
+        post = instaloader.Post.from_shortcode(self.L.context, post_url.split("/")[-2])
+        self.L.download_post(post, target='videos')
     
     def run(self, post_urls):
         urls = []
@@ -52,31 +44,25 @@ def download():
     password = request.form.get('password')
     post_urls = request.form.get('post_urls').splitlines()
     downloader = Downloader(username, password)
-    urls = downloader.run(post_urls)
+    downloader.run(post_urls)
+    
+    for url in glob.glob('./videos/*.txt'):
+        os.remove(url)
 
-    # Create a ZipFile object
     with zipfile.ZipFile('zip/downloads.zip', 'w') as zipf:
-        # Add multiple files to the zip
         for url in glob.glob('./videos/*'):
             zipf.write(url, arcname=os.path.basename(url))
-    
-    return jsonify({'zipfile': 'zip/downloads.zip'})
-
-@app.route('/videos/<path:filename>')
-def media(filename):
-    return send_from_directory(
-        app.config['UPLOAD_FOLDER'],
-        filename,
-        as_attachment=True
-    )
+            
+    return send_from_directory('zip', 'downloads.zip', as_attachment=True)
 
 @app.route('/clear', methods=['POST'])
 def clear():
-    time.sleep(5)
-    files = glob.glob('./videos/*')
-    for f in files:
-        os.remove(f)
-    return jsonify({'status': 'success'})
+    for url in glob.glob('./videos/*'):
+        os.remove(url)
+    for url in glob.glob('zip/*'):
+        os.remove(url)
+        
+    return "Cleared"
 
 if __name__ == "__main__":
     app.run(debug=True)
