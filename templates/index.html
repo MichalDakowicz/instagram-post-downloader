@@ -151,7 +151,7 @@
                             return xhr;
                         },
                         success: function (data) {
-                            window.location.href = "/download"; // Redirect on success
+                            window.location.href = "{{ url_for('download') }}?file=downloaded_files";
                         },
                         error: function () {
                             alert("An error occurred. Please try again.");
