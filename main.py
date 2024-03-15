@@ -2,7 +2,12 @@ import instaloader
 import os
 import glob
 
+if not os.path.exists("videos"):
+    os.makedirs("videos")
 
+if not os.path.exists("links.txt"):
+    with open("links.txt", "w") as f:
+        f.write("")
 
 class Downloader:
     def __init__(self):
