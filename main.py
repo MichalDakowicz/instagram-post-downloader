@@ -30,6 +30,8 @@ class Downloader:
             self.L.download_post(post, target='videos')
             print("Post downloaded successfully!")
         except instaloader.exceptions.InstaloaderException as e:
+            with open("links-unsuccesful.txt", "a") as f:
+                f.write(post_url + "\n")
             print(f"Error: {e}")
     
     def run(self):
